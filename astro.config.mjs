@@ -2,23 +2,29 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
+const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1];
+const isGitHubActions = process.env.GITHUB_ACTIONS === 'true';
+
 // https://astro.build/config
 export default defineConfig({
+	site: 'https://connor12858-site.github.io',
+	base: isGitHubActions && repoName ? `/${repoName}` : '/',
 	integrations: [
 		starlight({
-			title: 'My Docs',
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/withastro/starlight' }],
+			title: 'FGov P2P Network',
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/connor12858-site/P2PNetwork' }],
 			sidebar: [
 				{
-					label: 'Guides',
-					items: [
-						// Each item here is one entry in the navigation menu.
-						{ label: 'Example Guide', slug: 'guides/example' },
-					],
+					label: 'Downloads',
+					autogenerate: { directory: 'downloads' },
 				},
 				{
-					label: 'Reference',
-					autogenerate: { directory: 'reference' },
+					label: 'How to Use',
+					autogenerate: { directory: 'how-to-use' },
+				},
+				{
+					label: 'Services',
+					autogenerate: { directory: 'services' },
 				},
 			],
 		}),

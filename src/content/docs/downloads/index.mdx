@@ -1,0 +1,36 @@
+---
+title: Downloads
+description: Live release information and build instructions for P2PNetwork.
+---
+
+import GitHubLivePanel from '../../../components/GitHubLivePanel.astro';
+
+Use this page to track the latest release and fetch binaries when assets are published.
+
+## Latest Release
+
+<GitHubLivePanel
+  owner="connor12858-site"
+  repo="P2PNetwork"
+  showRepo={true}
+  showRelease={true}
+  showIssues={false}
+  showMilestones={false}
+/>
+
+## Build From Source
+
+```bash
+git clone https://github.com/connor12858-site/P2PNetwork.git
+cd P2PNetwork/GoP2P
+go build ./cmd/relay
+go build ./cmd/user
+```
+
+This generates local relay and user binaries using your current Go toolchain.
+
+## Release Publishing Notes
+
+- Publish tagged releases in GitHub to populate this page automatically.
+- Attach platform-specific binaries to release assets when available.
+- Keep release notes focused on network behavior and compatibility changes.

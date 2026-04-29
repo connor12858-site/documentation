@@ -1,0 +1,37 @@
+---
+title: Services
+description: Relay, discovery, and peer connection behavior in P2PNetwork.
+---
+
+import GitHubLivePanel from '../../../components/GitHubLivePanel.astro';
+
+P2PNetwork is built around three service layers that cooperate at runtime.
+
+## Relay Service
+
+- Starts in standalone mode when no bootstrap peers are provided.
+- Exposes full node multiaddrs for other peers to connect.
+- Tracks connected peers and prints connection events.
+
+## Discovery Service
+
+- Uses a shared discovery topic: `fgov-network`.
+- Advertises peers through the DHT routing discovery layer.
+- Finds and connects to discovered peers on an interval.
+
+## Peer Connection Service
+
+- Connects by multiaddr with timeout protection.
+- Prevents duplicate active connections.
+- Supports manual disconnect by peer ID.
+
+## Project Work Status
+
+<GitHubLivePanel
+  owner="connor12858-site"
+  repo="P2PNetwork"
+  showRepo={false}
+  showRelease={false}
+  showIssues={true}
+  showMilestones={true}
+/>

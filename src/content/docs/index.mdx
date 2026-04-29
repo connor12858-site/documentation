@@ -1,36 +1,49 @@
 ---
-title: Welcome to Starlight
-description: Get started building your docs site with Starlight.
+title: P2PNetwork
+description: Libp2p-based networking with live project status from GitHub.
 template: splash
 hero:
-  tagline: Congrats on setting up a new Starlight project!
-  image:
-    file: ../../assets/houston.webp
+  tagline: Build and run a peer-to-peer network with relay, discovery, and direct node connections.
   actions:
-    - text: Example Guide
-      link: /guides/example/
+    - text: Learn More
+      link: /how-to-use/
       icon: right-arrow
-    - text: Read the Starlight docs
-      link: https://starlight.astro.build
-      icon: external
-      variant: minimal
+    - text: Downloads
+      link: /downloads/
+      icon: right-arrow
 ---
 
+import GitHubLivePanel from '../../components/GitHubLivePanel.astro';
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## Next steps
+## About the Project
+
+P2PNetwork is a Go-based libp2p project for running direct peer communication, relay-style node bootstrapping, and automatic peer discovery.
+
+## Quick Links
 
 <CardGrid stagger>
-	<Card title="Update content" icon="pencil">
-		Edit `src/content/docs/index.mdx` to see this page change.
-	</Card>
-	<Card title="Add new content" icon="add-document">
-		Add Markdown or MDX files to `src/content/docs` to create new pages.
-	</Card>
-	<Card title="Configure your site" icon="setting">
-		Edit your `sidebar` and other config in `astro.config.mjs`.
-	</Card>
-	<Card title="Read the docs" icon="open-book">
-		Learn more in [the Starlight Docs](https://starlight.astro.build/).
-	</Card>
+  <Card title="Downloads" icon="download">
+    Get the latest release status and source build instructions in [Downloads](/downloads/).
+  </Card>
+  <Card title="How to Use" icon="rocket">
+    Start a relay and join user peers using the command workflow in [How to Use](/how-to-use/).
+  </Card>
+  <Card title="Services" icon="server">
+    Review relay, discovery, and node behavior in [Services](/services/).
+  </Card>
+  <Card title="GitHub Repository" icon="open-book">
+    Browse source and open work in [connor12858-site/P2PNetwork](https://github.com/connor12858-site/P2PNetwork).
+  </Card>
 </CardGrid>
+
+## Latest Release and Project Status
+
+<GitHubLivePanel
+  owner="connor12858-site"
+  repo="P2PNetwork"
+  showRepo={true}
+  showRelease={true}
+  showIssues={false}
+  showMilestones={false}
+/>

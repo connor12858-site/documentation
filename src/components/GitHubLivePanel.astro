@@ -1,0 +1,270 @@
+---
+interface Props {
+  owner: string;
+  repo: string;
+  showRepo?: boolean;
+  showRelease?: boolean;
+  showIssues?: boolean;
+  showMilestones?: boolean;
+}
+
+const {
+  owner,
+  repo,
+  showRepo = true,
+  showRelease = true,
+  showIssues = true,
+  showMilestones = true,
+} = Astro.props;
+---
+
+<section
+  class="gh-live"
+  data-gh-live
+  data-owner={owner}
+  data-repo={repo}
+  data-show-repo={String(showRepo)}
+  data-show-release={String(showRelease)}
+  data-show-issues={String(showIssues)}
+  data-show-milestones={String(showMilestones)}
+>
+  <p class="gh-live__status" data-gh-status>Loading live data from GitHub...</p>
+  <div class="gh-live__grid">
+    <article class="gh-live__card" data-gh-card="repo">
+      <h3>Repository</h3>
+      <p><strong>Name:</strong> <span data-gh-name>-</span></p>
+      <p><strong>Description:</strong> <span data-gh-description>-</span></p>
+      <p><strong>Stars:</strong> <span data-gh-stars>-</span></p>
+      <p><strong>Language:</strong> <span data-gh-language>-</span></p>
+      <p><strong>Last push:</strong> <span data-gh-updated>-</span></p>
+    </article>
+
+    <article class="gh-live__card" data-gh-card="release">
+      <h3>Latest Release</h3>
+      <p><strong>Tag:</strong> <span data-gh-release-tag>-</span></p>
+      <p><strong>Published:</strong> <span data-gh-release-date>-</span></p>
+      <p><strong>Assets:</strong> <span data-gh-release-assets>-</span></p>
+      <p>
+        <a data-gh-release-link href="#" target="_blank" rel="noreferrer">Open release notes</a>
+      </p>
+    </article>
+
+    <article class="gh-live__card" data-gh-card="issues">
+      <h3>Open Issues</h3>
+      <p><strong>Count:</strong> <span data-gh-issues-count>-</span></p>
+      <ul data-gh-issues-list></ul>
+    </article>
+
+    <article class="gh-live__card" data-gh-card="milestones">
+      <h3>Open Milestones</h3>
+      <p><strong>Count:</strong> <span data-gh-milestones-count>-</span></p>
+      <ul data-gh-milestones-list></ul>
+    </article>
+  </div>
+</section>
+
+<style>
+  .gh-live {
+    margin: 1.25rem 0 2rem;
+  }
+
+  .gh-live__status {
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+    opacity: 0.8;
+  }
+
+  .gh-live__grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .gh-live__card {
+    padding: 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--sl-color-bg) 92%, var(--sl-color-accent-high) 8%);
+  }
+
+  .gh-live__card h3 {
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
+  }
+
+  .gh-live__card p {
+    margin: 0.35rem 0;
+    font-size: 0.95rem;
+  }
+
+  .gh-live__card ul {
+    margin: 0.45rem 0 0;
+    padding-left: 1.1rem;
+  }
+
+  .gh-live__card li {
+    margin: 0.3rem 0;
+    font-size: 0.92rem;
+  }
+
+  .gh-live__card a {
+    word-break: break-word;
+  }
+
+  @media (max-width: 640px) {
+    .gh-live__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const TRUE_VALUE = 'true';
+
+    function text(node, value) {
+      if (node) node.textContent = value;
+    }
+
+    function dateString(value) {
+      if (!value) return 'n/a';
+      return new Date(value).toLocaleString();
+    }
+
+    function listItem(label, href) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = href;
+      a.target = '_blank';
+      a.rel = 'noreferrer';
+      a.textContent = label;
+      li.appendChild(a);
+      return li;
+    }
+
+    async function getJson(url) {
+      const response = await fetch(url, {
+        headers: {
+          Accept: 'application/vnd.github+json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`GitHub API request failed (${response.status}) for ${url}`);
+      }
+      return response.json();
+    }
+
+    async function init(panel) {
+      if (panel.dataset.ghReady === TRUE_VALUE) return;
+      panel.dataset.ghReady = TRUE_VALUE;
+
+      const owner = panel.dataset.owner;
+      const repo = panel.dataset.repo;
+      const showRepo = panel.dataset.showRepo === TRUE_VALUE;
+      const showRelease = panel.dataset.showRelease === TRUE_VALUE;
+      const showIssues = panel.dataset.showIssues === TRUE_VALUE;
+      const showMilestones = panel.dataset.showMilestones === TRUE_VALUE;
+
+      const statusNode = panel.querySelector('[data-gh-status]');
+      const cards = {
+        repo: panel.querySelector('[data-gh-card="repo"]'),
+        release: panel.querySelector('[data-gh-card="release"]'),
+        issues: panel.querySelector('[data-gh-card="issues"]'),
+        milestones: panel.querySelector('[data-gh-card="milestones"]'),
+      };
+
+      if (!showRepo && cards.repo) cards.repo.hidden = true;
+      if (!showRelease && cards.release) cards.release.hidden = true;
+      if (!showIssues && cards.issues) cards.issues.hidden = true;
+      if (!showMilestones && cards.milestones) cards.milestones.hidden = true;
+
+      const tasks = [];
+
+      if (showRepo) {
+        tasks.push(
+          getJson(`https://api.github.com/repos/${owner}/${repo}`).then((data) => {
+            text(panel.querySelector('[data-gh-name]'), data.full_name || `${owner}/${repo}`);
+            text(panel.querySelector('[data-gh-description]'), data.description || 'No description set.');
+            text(panel.querySelector('[data-gh-stars]'), String(data.stargazers_count ?? 0));
+            text(panel.querySelector('[data-gh-language]'), data.language || 'n/a');
+            text(panel.querySelector('[data-gh-updated]'), dateString(data.pushed_at));
+          })
+        );
+      }
+
+      if (showRelease) {
+        tasks.push(
+          getJson(`https://api.github.com/repos/${owner}/${repo}/releases/latest`)
+            .then((data) => {
+              text(panel.querySelector('[data-gh-release-tag]'), data.tag_name || 'n/a');
+              text(panel.querySelector('[data-gh-release-date]'), dateString(data.published_at));
+              text(panel.querySelector('[data-gh-release-assets]'), String(data.assets?.length ?? 0));
+              const link = panel.querySelector('[data-gh-release-link]');
+              if (link) link.href = data.html_url || `https://github.com/${owner}/${repo}/releases`;
+            })
+            .catch(() => {
+              text(panel.querySelector('[data-gh-release-tag]'), 'No release yet');
+              text(panel.querySelector('[data-gh-release-date]'), 'n/a');
+              text(panel.querySelector('[data-gh-release-assets]'), '0');
+              const link = panel.querySelector('[data-gh-release-link]');
+              if (link) {
+                link.href = `https://github.com/${owner}/${repo}/releases`;
+                link.textContent = 'Open releases';
+              }
+            })
+        );
+      }
+
+      if (showIssues) {
+        tasks.push(
+          getJson(`https://api.github.com/repos/${owner}/${repo}/issues?state=open&per_page=5`).then((data) => {
+            const issues = data.filter((item) => !item.pull_request);
+            text(panel.querySelector('[data-gh-issues-count]'), String(issues.length));
+            const list = panel.querySelector('[data-gh-issues-list]');
+            if (list) {
+              list.innerHTML = '';
+              if (issues.length === 0) {
+                list.appendChild(listItem('No open issues', `https://github.com/${owner}/${repo}/issues`));
+              } else {
+                issues.slice(0, 3).forEach((issue) => {
+                  list.appendChild(listItem(`#${issue.number} ${issue.title}`, issue.html_url));
+                });
+              }
+            }
+          })
+        );
+      }
+
+      if (showMilestones) {
+        tasks.push(
+          getJson(`https://api.github.com/repos/${owner}/${repo}/milestones?state=open&per_page=5`).then((data) => {
+            text(panel.querySelector('[data-gh-milestones-count]'), String(data.length));
+            const list = panel.querySelector('[data-gh-milestones-list]');
+            if (list) {
+              list.innerHTML = '';
+              if (data.length === 0) {
+                list.appendChild(listItem('No open milestones', `https://github.com/${owner}/${repo}/milestones`));
+              } else {
+                data.slice(0, 3).forEach((item) => {
+                  list.appendChild(listItem(item.title, item.html_url));
+                });
+              }
+            }
+          })
+        );
+      }
+
+      try {
+        await Promise.all(tasks);
+        text(statusNode, `Live GitHub data from ${owner}/${repo}`);
+      } catch (error) {
+        console.error(error);
+        text(statusNode, 'Unable to load one or more GitHub sections right now.');
+      }
+    }
+
+    document.querySelectorAll('[data-gh-live]').forEach((panel) => {
+      init(panel);
+    });
+  })();
+</script>

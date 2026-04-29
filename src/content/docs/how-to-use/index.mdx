@@ -1,0 +1,47 @@
+---
+title: How to Use
+description: Start a relay, connect peers, and use discovery in P2PNetwork.
+---
+
+P2PNetwork includes two entrypoints:
+
+- `cmd/relay`: starts a node without bootstrap peers.
+- `cmd/user`: optionally joins a bootstrap multiaddr and enables discovery.
+
+## Build the Binaries
+
+```bash
+cd GoP2P
+go build ./cmd/relay
+go build ./cmd/user
+```
+
+## Start a Relay Node
+
+```bash
+./relay
+```
+
+When the relay starts, it prints its Peer ID and full multiaddrs. Copy one of those multiaddrs for user nodes.
+
+## Start a User Node with Bootstrap
+
+```bash
+./user <relay-multiaddr>
+```
+
+If a bootstrap peer is supplied, the user node advertises on the discovery topic and starts periodic peer discovery.
+
+## Runtime Commands
+
+Both relay and user binaries support these interactive commands:
+
+- `connect <multiaddr>`
+- `disconnect <peerID>`
+- `peers`
+- `discovered`
+- `exit`
+
+## Next Step
+
+See [Services](/services/) for details on relay behavior, discovery topic usage, and connection lifecycle.

@@ -1,49 +1,58 @@
-# Starlight Starter Kit: Basics
+# P2PNetwork Documentation Site
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+This folder contains the Astro + Starlight documentation site for P2PNetwork.
 
+The site is designed for GitHub Pages and includes live repository data from:
+
+- `https://github.com/connor12858-site/P2PNetwork`
+
+## Site Features
+
+- Docs-first homepage with primary calls to action: Learn More and Downloads.
+- Sidebar sections in this order: Downloads, How to Use, Services.
+- Live GitHub API panels for:
+	- repository summary
+	- latest release information
+	- open issues and milestones
+
+## Local Development
+
+Run all commands from this `documentation` folder.
+
+```bash
+npm install
+npm run dev
 ```
-npm create astro@latest -- --template starlight
+
+Build for production:
+
+```bash
+npm run build
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Preview production build locally:
 
-## 🚀 Project Structure
-
-Inside of your Astro + Starlight project, you'll see the following folders and files:
-
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
+```bash
+npm run preview
 ```
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
+## GitHub Pages Deployment
 
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
+Deployment workflow:
 
-Static assets, like favicons, can be placed in the `public/` directory.
+- `.github/workflows/deploy-pages.yml`
 
-## 🧞 Commands
+The workflow builds the site and deploys `dist/` to GitHub Pages on pushes to `main` or `master`.
 
-All commands are run from the root of the project, from a terminal:
+`astro.config.mjs` is configured to support project-site paths in GitHub Actions using:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- `site: https://connor12858-site.github.io`
+- `base: /<repo-name>` during CI
 
-## 👀 Want to learn more?
+## Content Structure
 
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+- `src/content/docs/index.mdx` - homepage
+- `src/content/docs/downloads/index.mdx` - release + build info
+- `src/content/docs/how-to-use/index.mdx` - usage instructions
+- `src/content/docs/services/index.mdx` - service behavior + issue tracking
+- `src/components/GitHubLivePanel.astro` - reusable live GitHub data component
