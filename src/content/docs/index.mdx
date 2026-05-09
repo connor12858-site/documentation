@@ -1,43 +1,95 @@
 ---
 title: P2PNetwork
-description: Libp2p-based networking with live project status from GitHub.
+description: Go/libp2p peer-to-peer network with bootstrap, peer, and GUI nodes.
 template: splash
 hero:
-  tagline: Build and run a peer-to-peer network with relay, discovery, and direct node connections.
+  tagline: A Go network stack with a bootstrap node, a peer node, and a Fyne desktop client.
   actions:
-    - text: Learn More
-      link: /how-to-use/
-      icon: right-arrow
+    - text: Get Started
+      link: /getting-started/
+      icon: rocket
+    - text: Architecture
+      link: /architecture/
+      icon: open-book
     - text: Downloads
       link: /downloads/
-      icon: right-arrow
+      icon: download
 ---
 
 import GitHubLivePanel from '../../components/GitHubLivePanel.astro';
 import { Card, CardGrid } from '@astrojs/starlight/components';
 
-## About the Project
+## What this project is
 
-P2PNetwork is a Go-based libp2p project for running direct peer communication, relay-style node bootstrapping, and automatic peer discovery.
+P2PNetwork is a Go module named `fgov/network`. It uses libp2p and a Kademlia DHT to let nodes discover each other, connect directly, and exchange a display name over a small `/fgov` stream protocol.
 
-## Quick Links
+The current codebase ships three entrypoints:
+
+- `cmd/bootstrap` - starts the bootstrap node on port `52837`
+- `cmd/peer` - starts a peer node, reads `bs-nodes` if present, and discovers peers
+- `cmd/gui` - starts a Fyne desktop app that wraps the same node package
+
+## Start here
 
 <CardGrid stagger>
+  <Card title="Getting Started" icon="rocket">
+    Build the project and run your first nodes in [Getting Started](/getting-started/).
+  </Card>
+  <Card title="How to Use" icon="setting">
+    Learn the exact CLI flow for bootstrap and peer nodes in [How to Use](/how-to-use/).
+  </Card>
+  <Card title="GUI" icon="star">
+    See how the desktop app uses the same node package in [GUI](/gui/).
+  </Card>
+  <Card title="Architecture" icon="open-book">
+    Understand the runtime layout, node data model, and how peers are tracked in [Architecture](/architecture/).
+  </Card>
+  <Card title="Services" icon="pulse">
+    Review discovery, connection, and name-sync behavior in [Services](/services/).
+  </Card>
+  <Card title="Network Protocol" icon="book-open">
+    See the actual topics, stream handlers, and address formats in [Network Protocol](/network-protocol/).
+  </Card>
   <Card title="Downloads" icon="download">
-    Get the latest release status and source build instructions in [Downloads](/downloads/).
+    Check the release artifacts and build options in [Downloads](/downloads/).
   </Card>
-  <Card title="How to Use" icon="rocket">
-    Start a relay and join user peers using the command workflow in [How to Use](/how-to-use/).
-  </Card>
-  <Card title="Services" icon="server">
-    Review relay, discovery, and node behavior in [Services](/services/).
-  </Card>
-  <Card title="GitHub Repository" icon="open-book">
-    Browse source and open work in [connor12858-site/P2PNetwork](https://github.com/connor12858-site/P2PNetwork).
+  <Card title="Release Notes" icon="list">
+    Track current binary releases in [Release Notes](/release-notes/).
   </Card>
 </CardGrid>
 
-## Latest Release and Project Status
+---
+
+## What the code actually does
+
+<CardGrid>
+  <Card title="Bootstrap node">
+    Prompts for a name, starts on `52837`, prints its multiaddr, and writes the first address to `bs-nodes`.
+  </Card>
+  <Card title="Peer node">
+    Prompts for a name, reads `bs-nodes` if available, advertises on `fgov-network`, and discovers peers in the DHT.
+  </Card>
+  <Card title="Peer naming">
+    Uses the `/fgov` stream protocol to exchange names and keep a readable peer list.
+  </Card>
+  <Card title="Desktop GUI">
+    The Fyne app shows running state, connected peers, and the current node name.
+  </Card>
+</CardGrid>
+
+## Current releases
+
+The repository already includes Windows release binaries under `Releases/`:
+
+- `bootstrap-v1.0.exe`
+- `peer-node-v1.0.exe`
+- `bootstrap-v1.1.exe`
+- `peer-v1.1.exe`
+- `gui-v1.1.exe`
+
+Use [Downloads](/downloads/) for build commands and [Release Notes](/release-notes/) for the current release inventory.
+
+## Live repo status
 
 <GitHubLivePanel
   owner="connor12858-site"
@@ -47,3 +99,7 @@ P2PNetwork is a Go-based libp2p project for running direct peer communication, r
   showIssues={false}
   showMilestones={false}
 />
+
+## If you only read one page
+
+Read [Getting Started](/getting-started/) first, then [How to Use](/how-to-use/). That is the fastest path to a working network.

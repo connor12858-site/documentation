@@ -1,0 +1,59 @@
+---
+title: Release Notes
+description: The current release inventory and what is published in the repo today.
+---
+
+import GitHubLivePanel from '../../../components/GitHubLivePanel.astro';
+
+There is no formal changelog file in the repository yet. This page documents the release artifacts that are currently published in `Releases/`.
+
+## Release inventory
+
+| Release file | Meaning |
+|--------------|---------|
+| `bootstrap-v1.0.exe` | Bootstrap node for the first release line |
+| `peer-node-v1.0.exe` | Peer CLI for the first release line |
+| `bootstrap-v1.1.exe` | Bootstrap node from the newer release line |
+| `peer-v1.1.exe` | Peer CLI from the newer release line |
+| `gui-v1.1.exe` | Fyne desktop client from the newer release line |
+
+## Live release status
+
+<GitHubLivePanel
+  owner="connor12858-site"
+  repo="P2PNetwork"
+  showRepo={false}
+  showRelease={true}
+  showIssues={false}
+  showMilestones={false}
+/>
+
+## What the versions tell us
+
+From the shipped binaries and the current code:
+
+- v1.0 corresponds to the bootstrap and peer CLI pair
+- v1.1 adds the desktop GUI and the newer peer/bootstrap binaries
+- the published binaries are currently Windows executables
+
+That is the safest release summary available from the repo itself today.
+
+## Suggested changelog format for future releases
+
+When the repo starts tagging releases with notes, this page should list:
+
+- version
+- release date
+- changed binaries
+- protocol or compatibility changes
+- user-facing fixes
+
+## Download the artifacts
+
+See [Downloads](/downloads/) for the current release files and build commands.
+
+## Next pages
+
+- [How to Use](/how-to-use/) - run the current binaries
+- [Deployment](/deployment/) - run them on another machine
+- [FAQ](/faq/) - common questions about the current release set

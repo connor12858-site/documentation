@@ -1,0 +1,88 @@
+---
+title: Deployment
+description: Run the current binaries on one machine or across a network.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+This guide is about the code as it exists now. It is interactive, so the deployment story is simpler than a service-daemon story.
+
+## Deployment modes
+
+<CardGrid>
+  <Card title="Local dev">
+    Run bootstrap and one or more peers from terminals on the same machine.
+  </Card>
+  <Card title="LAN test">
+    Put the bootstrap node on a reachable host and point peers at the printed multiaddr.
+  </Card>
+  <Card title="Release binary">
+    Use the Windows executables in `Releases/` or build your own from source.
+  </Card>
+  <Card title="Desktop client">
+    Ship `gui-v1.1.exe` as the current UI-facing build.
+  </Card>
+</CardGrid>
+
+## Local setup
+
+1. Start the bootstrap node.
+2. Keep the terminal open so the process stays alive.
+3. Run one or more peer nodes in separate terminals.
+4. Open the GUI if you want a windowed view of the same network state.
+
+Because peer nodes listen on port `0`, you can run several peers on the same machine without manually choosing ports.
+
+## What needs to be reachable
+
+For another machine to join the network, the bootstrap node must be reachable at the printed multiaddr.
+
+That usually means:
+
+- using a real LAN or public IP address
+- allowing the bootstrap port through the firewall
+- keeping the `bs-nodes` file together with the binaries when you move them
+
+## Automation caveat
+
+The current binaries are interactive:
+
+- the bootstrap node asks for a name
+- the peer node asks for a name
+- the GUI asks for a name before turning the node on
+
+If you want a daemon-style deployment, you need to wrap or modify the startup path so that the name comes from configuration instead of standard input.
+
+## Monitoring the current app
+
+There is no built-in metrics endpoint yet. Use the terminal output and the commands already in the node package:
+
+- `peers`
+- `discovered`
+- the printed `Peer ID`
+- the printed multiaddrs
+
+For the GUI, watch the running state label and the peer list in the window.
+
+## Files that matter in deployment
+
+- `bs-nodes` - bootstrap address file written by the bootstrap process
+- `Releases/` - current published Windows binaries
+- `Network/cmd/*` - the entrypoints you actually run
+
+## A realistic production shape
+
+If you move beyond local testing, the simplest layout is:
+
+1. one public bootstrap node
+2. multiple peers pointed at that bootstrap node
+3. the GUI only on user-facing machines
+4. a shared process for copying or distributing `bs-nodes`
+
+That is enough for the current codebase.
+
+## Next pages
+
+- [Downloads](/downloads/) - the current release artifacts and build commands
+- [How to Use](/how-to-use/) - exact runtime behavior
+- [FAQ](/faq/) - answers to the questions people will ask first

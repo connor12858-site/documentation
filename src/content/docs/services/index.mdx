@@ -1,31 +1,90 @@
 ---
 title: Services
-description: Relay, discovery, and peer connection behavior in P2PNetwork.
+description: The runtime behaviors that live inside the shared node package.
 ---
 
 import GitHubLivePanel from '../../../components/GitHubLivePanel.astro';
 
-P2PNetwork is built around three service layers that cooperate at runtime.
+The codebase is organized around a single shared node package. These are not separate daemons; they are behaviors inside `pkg/node` that the CLI and GUI call into.
 
-## Relay Service
+## Bootstrap service
 
-- Starts in standalone mode when no bootstrap peers are provided.
-- Exposes full node multiaddrs for other peers to connect.
-- Tracks connected peers and prints connection events.
+The bootstrap node:
 
-## Discovery Service
+- listens on port `52837`
+- prompts for a name
+- prints `Peer ID` and `Full addresses`
+- writes the first multiaddr to `bs-nodes`
+- starts the DHT in server mode
 
-- Uses a shared discovery topic: `fgov-network`.
-- Advertises peers through the DHT routing discovery layer.
-- Finds and connects to discovered peers on an interval.
+That is the seed node every peer uses to join the network.
 
-## Peer Connection Service
+## Discovery service
 
-- Connects by multiaddr with timeout protection.
-- Prevents duplicate active connections.
-- Supports manual disconnect by peer ID.
+Discovery is implemented with routing discovery on the `fgov-network` topic.
 
-## Project Work Status
+Behavior:
+
+- `AdvertiseDiscovery("fgov-network")` waits for routing peers before advertising
+- `FindPeers()` pauses briefly on startup, then loops forever
+- discovered peers are stored in `DiscoveredPeers`
+- already-connected peers are skipped
+- newly discovered peers are connected with a short timeout
+
+The code currently focuses on finding and connecting peers directly. It does not implement onion routing or multi-hop paths.
+
+## Connection service
+
+The connection code handles both manual and automatic connections.
+
+Manual connect:
+
+- parses a multiaddr
+- converts it to `peer.AddrInfo`
+- skips peers that are already connected
+- attempts the connection with a 10 second timeout
+
+Manual disconnect:
+
+- resolves a peer ID
+- closes all active connections to that peer
+- removes the peer from the connected map
+
+The CLI exposes `connect`, but not `disconnect`. The method still exists in the package for programmatic use.
+
+## Name sync service
+
+When a peer connects, the node opens a stream using the `/fgov` protocol and exchanges names as JSON.
+
+Example payload:
+
+```json
+{"name":"example-node"}
+```
+
+The exchange is symmetrical, so both sides can update their local peer maps with the remote name.
+
+## Query helpers
+
+The package also provides helpers used by the CLI and GUI:
+
+- `IsRunning()`
+- `GetPeersSnapshot()`
+- `GetDiscoveredPeersSnapshot()`
+- `PrintPeers()`
+- `PrintDiscoveredPeers()`
+
+These are what the user-facing interfaces use to render live state.
+
+## How the pieces fit together
+
+1. Bootstrap starts and writes `bs-nodes`.
+2. Peers read that file and connect.
+3. Connected peers exchange names.
+4. Discovery keeps searching for more peers.
+5. The GUI renders the same shared node state in a window.
+
+## Live repo status
 
 <GitHubLivePanel
   owner="connor12858-site"
@@ -35,3 +94,9 @@ P2PNetwork is built around three service layers that cooperate at runtime.
   showIssues={true}
   showMilestones={true}
 />
+
+## Next pages
+
+- [Network Protocol](/network-protocol/) - topics, addresses, and stream handlers
+- [Deployment](/deployment/) - how to run the current binaries outside local testing
+- [GUI](/gui/) - the desktop client

@@ -1,47 +1,151 @@
 ---
 title: How to Use
-description: Start a relay, connect peers, and use discovery in P2PNetwork.
+description: Run the bootstrap node, peer node, and desktop app the way the code actually behaves.
 ---
 
-P2PNetwork includes two entrypoints:
+P2PNetwork currently has three entrypoints in `Network/cmd`:
 
-- `cmd/relay`: starts a node without bootstrap peers.
-- `cmd/user`: optionally joins a bootstrap multiaddr and enables discovery.
+- `bootstrap` - interactive bootstrap node
+- `peer` - interactive peer node
+- `gui` - Fyne desktop UI
 
-## Build the Binaries
+## Build the binaries
 
-```bash
-cd GoP2P
-go build ./cmd/relay
-go build ./cmd/user
-```
-
-## Start a Relay Node
+From `Network/`:
 
 ```bash
-./relay
+go build -o bootstrap ./cmd/bootstrap
+go build -o peer ./cmd/peer
+go build -o gui ./cmd/gui
 ```
 
-When the relay starts, it prints its Peer ID and full multiaddrs. Copy one of those multiaddrs for user nodes.
-
-## Start a User Node with Bootstrap
+The repository also includes a `Makefile`:
 
 ```bash
-./user <relay-multiaddr>
+make bootstrap
+make peer
 ```
 
-If a bootstrap peer is supplied, the user node advertises on the discovery topic and starts periodic peer discovery.
+## Bootstrap node flow
 
-## Runtime Commands
+Start the bootstrap node:
 
-Both relay and user binaries support these interactive commands:
+```bash
+./bootstrap
+```
 
-- `connect <multiaddr>`
-- `disconnect <peerID>`
-- `peers`
-- `discovered`
-- `exit`
+The program prompts for a node name, appends `-bootstrap` to it, starts on port `52837`, prints the peer ID and multiaddrs, and writes the first multiaddr to a file called `bs-nodes` in the working directory.
 
-## Next Step
+Keep this terminal open. Every peer needs a bootstrap address to start discovering the network.
 
-See [Services](/services/) for details on relay behavior, discovery topic usage, and connection lifecycle.
+## Peer node flow
+
+Start a second terminal in the same directory:
+
+```bash
+./peer
+```
+
+The peer node:
+
+- reads `bs-nodes` if it exists
+- prompts for a display name
+- connects to the bootstrap peers
+- starts discovery on `fgov-network`
+- keeps reconnecting to discovered peers when they are not already connected
+
+## Commands in the peer CLI
+
+The peer terminal accepts these commands:
+
+```text
+connect <multiaddr>
+peers
+discovered
+exit
+```
+
+Notes:
+
+- `connect` expects a full `/ip4/.../tcp/.../p2p/...` multiaddr
+- `peers` prints the currently connected peers and their names
+- `discovered` prints peers found by discovery
+- `exit` shuts the node down cleanly
+
+The current CLI does not expose a `disconnect` command, even though the node package has a `Disconnect` method for programmatic use.
+
+## GUI flow
+
+Run the desktop app:
+
+```bash
+./gui
+```
+
+The window title is `FGov P2P Network`. It lets you:
+
+- enter a node name
+- turn the node on and off
+- refresh the peer list
+- inspect the current running state
+
+## What the network does on startup
+
+1. The host is created with libp2p.
+2. The DHT starts in server mode.
+3. Bootstrap peers from `bs-nodes` are connected.
+4. The node prints `Peer ID` and `Full addresses`.
+5. Discovery starts after a short delay.
+6. Connected peers exchange names over the `/fgov` protocol.
+
+## Working with `bs-nodes`
+
+The bootstrap node writes the first multiaddr it sees to `bs-nodes`.
+
+That means:
+
+- running the peer from the same directory is enough for local testing
+- copying `bs-nodes` to another machine lets another peer join the same bootstrap node
+- if you move the binary elsewhere, copy the file too
+
+## Practical examples
+
+### Local test setup
+
+```bash
+./bootstrap
+./peer
+./peer
+```
+
+Because peer nodes listen on port `0`, they pick an available port automatically. You can run several on one machine without adding a custom port flag.
+
+### Join from another machine
+
+1. Start the bootstrap node on a reachable host.
+2. Use the printed multiaddr with the host's real IP address.
+3. Give that multiaddr to peers on the same network or across the internet.
+
+## Troubleshooting
+
+### The peer never finds anything
+
+- Check that `bs-nodes` exists
+- Check that the bootstrap node is still running
+- Make sure the printed multiaddr uses an address the peer can actually reach
+
+### The GUI starts but shows no peers
+
+- Make sure a bootstrap node is already running
+- Refresh after the peer has had time to discover others
+
+### The name output looks odd
+
+- The bootstrap node gets `-bootstrap` appended automatically
+- Names are exchanged directly between peers after a connection is established
+
+## Next pages
+
+- [Services](/services/) - bootstrap, discovery, and name sync behavior
+- [Network Protocol](/network-protocol/) - the actual topics and stream handlers
+- [Deployment](/deployment/) - how to run this outside local testing

@@ -1,0 +1,48 @@
+---
+title: GUI
+description: The current Fyne desktop client for P2PNetwork.
+---
+
+The GUI is a thin desktop wrapper around the same node package used by the CLI.
+
+## What it does
+
+- opens a window titled `FGov P2P Network`
+- lets you enter a node name
+- starts and stops the node with a button
+- shows whether the node is running
+- lists connected peers
+- shows a placeholder apps panel
+
+## How it starts
+
+The GUI reads `bs-nodes` from the working directory if the file exists. If a bootstrap node has already written that file, the GUI can join the same network without extra setup.
+
+## Build and run
+
+From `Network/`:
+
+```bash
+go build -o gui ./cmd/gui
+./gui
+```
+
+On Windows, the release binary is `gui-v1.1.exe`.
+
+## How the UI maps to the code
+
+The GUI uses the shared `Node` type:
+
+- `Turn On` calls `node.NewNode(...)`
+- `Turn Off` calls `Close()` on the node
+- `Refresh` rebuilds the peer view from `GetPeersSnapshot()`
+
+## What the GUI is not yet
+
+It is not a separate protocol implementation. It is a front-end for the same bootstrap, discovery, and name-sync logic used by the CLI.
+
+## Next pages
+
+- [How to Use](/how-to-use/) - command-line flow
+- [Services](/services/) - the shared node behavior
+- [Downloads](/downloads/) - current GUI binary

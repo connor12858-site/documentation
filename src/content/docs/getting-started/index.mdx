@@ -1,0 +1,132 @@
+---
+title: Getting Started
+description: Build the project and run the bootstrap, peer, and GUI nodes locally.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+This is the fastest way to get a real node running. The current codebase lives in `Network/` and builds three entrypoints: `bootstrap`, `peer`, and `gui`.
+
+## Prerequisites
+
+- Go 1.26.2 or later
+- Git
+- A terminal
+
+Check your Go install:
+
+```bash
+go version
+```
+
+## Clone and build
+
+```bash
+git clone https://github.com/connor12858-site/P2PNetwork.git
+cd P2PNetwork/Network
+```
+
+Build the current binaries:
+
+```bash
+go build -o bootstrap ./cmd/bootstrap
+go build -o peer ./cmd/peer
+go build -o gui ./cmd/gui
+```
+
+The repo also includes a `Makefile` and `build.ps1` for repeatable builds.
+
+## Start the bootstrap node
+
+```bash
+./bootstrap
+```
+
+The bootstrap node prompts for a name, starts on port `52837`, prints its peer ID and multiaddrs, and writes the first multiaddr to a file called `bs-nodes` in the working directory.
+
+If you are on Windows, use the built `.exe` file from `bin/` or `Releases/`.
+
+## Start a peer node
+
+Open a second terminal in the same directory and run:
+
+```bash
+./peer
+```
+
+The peer node reads `bs-nodes` if it exists, prompts for a name, connects to the bootstrap node, and starts discovery.
+
+## Try the commands
+
+The peer CLI accepts these commands:
+
+```text
+connect <multiaddr>
+peers
+discovered
+exit
+```
+
+Useful things to know:
+
+- `peers` shows currently connected peers
+- `discovered` shows peers returned by discovery
+- `connect` uses a full multiaddr like `/ip4/192.168.1.10/tcp/52837/p2p/<peer-id>`
+- `exit` shuts the node down cleanly
+
+## Try the GUI
+
+Run the desktop client in a third terminal:
+
+```bash
+./gui
+```
+
+The Fyne app uses the same node package. It shows the current name, running state, and connected peers.
+
+## What to expect
+
+<CardGrid>
+  <Card title="Bootstrap">
+    Prompts for a name, writes `bs-nodes`, and stays up as the discovery anchor.
+  </Card>
+  <Card title="Peer">
+    Connects to bootstrap, advertises on `fgov-network`, and keeps searching for peers.
+  </Card>
+  <Card title="GUI">
+    Starts the same node package behind a desktop window.
+  </Card>
+</CardGrid>
+
+## Common issues
+
+### Nothing connects
+
+- Make sure the bootstrap node is still running
+- Keep the `bs-nodes` file in the same working directory as the peer
+- Check the peer can reach the bootstrap machine over the network
+
+### Build errors
+
+- Make sure you are in `Network/`
+- Run `go mod download`
+- Verify your Go version is recent enough
+
+### Name or peer output looks wrong
+
+- The bootstrap node gets `-bootstrap` appended automatically
+- Connected peers exchange names over the `/fgov` stream protocol
+
+## Next steps
+
+<CardGrid>
+  <Card title="Architecture" icon="open-book">
+    Read [Architecture](/architecture/) to understand how the node package is organized.
+  </Card>
+  <Card title="How to Use" icon="setting">
+    Continue with [How to Use](/how-to-use/) for the exact runtime behavior.
+  </Card>
+  <Card title="Downloads" icon="download">
+    See [Downloads](/downloads/) for the current release binaries.
+  </Card>
+</CardGrid>

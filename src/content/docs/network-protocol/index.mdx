@@ -1,0 +1,133 @@
+---
+title: Network Protocol
+description: The actual libp2p, DHT, multiaddr, and /fgov protocol behavior in the codebase.
+---
+
+The current protocol surface is small and concrete. There is no onion routing layer yet; the code focuses on discovery, direct connections, and name exchange.
+
+## Addressing
+
+Nodes use libp2p multiaddrs.
+
+Example:
+
+```text
+/ip4/192.168.1.100/tcp/52837/p2p/12D3KooWHj...
+```
+
+The important parts are:
+
+- `/ip4/...` or `/ip6/...` - the network address
+- `/tcp/...` - the port
+- `/p2p/...` - the peer ID
+
+The bootstrap node prints these addresses and writes one of them to `bs-nodes`.
+
+## Transport and host
+
+Each node creates a libp2p host listening on `/ip4/0.0.0.0/tcp/<port>`.
+
+That means:
+
+- the bootstrap node uses port `52837`
+- peer nodes use port `0` in the current CLI, which lets libp2p choose an available port
+- the same host is used for connections, DHT, and streams
+
+## Discovery topic
+
+Discovery runs on the topic `fgov-network`.
+
+The flow is:
+
+1. the peer starts
+2. it waits a short time before discovery loops begin
+3. it advertises itself on the topic after the DHT has routing peers
+4. it queries the discovery topic repeatedly
+5. discovered peers are stored locally
+6. new peers are connected if they are not already connected
+
+This is the main network protocol today.
+
+## Peer naming protocol
+
+When two peers connect, they exchange names over a custom stream protocol:
+
+```text
+/fgov
+```
+
+The payload is JSON:
+
+```json
+{"name":"node-name"}
+```
+
+The exchange happens in both directions:
+
+1. the local node opens a stream to the remote peer
+2. both sides send their own name
+3. both sides record the remote display name in the peer map
+
+That is why `peers` output is readable instead of being only raw peer IDs.
+
+## Connection behavior
+
+The connection path is intentionally simple:
+
+- parse the multiaddr
+- convert it to `peer.AddrInfo`
+- skip the connection if the peer is already connected
+- attempt the connection with a 10 second timeout
+
+If the connection succeeds, the peer is added to the connected map and name sync starts.
+
+## Discovery behavior
+
+`FindPeers()` loops forever while the node is running.
+
+Current timings:
+
+- initial delay before discovery: 3 seconds
+- retry delay after a discovery cycle: 10 seconds
+- connection timeout for discovered peers: 5 seconds
+- advertise retry delay when DHT peers are not ready: 5 seconds
+
+## Data model
+
+The node stores:
+
+- `Peers` - connected peers
+- `DiscoveredPeers` - discovered peers that may or may not be connected
+- `Name` - the local display name entered by the user
+- `Host` - the libp2p host
+- `DHT` - the Kademlia routing table
+
+That is enough for the CLI and GUI to render the current state.
+
+## What is not in the protocol yet
+
+The planning notes mention larger ideas, but they are not shipped in the current code:
+
+- routing hops
+- onion encryption layers
+- `.fgov` name resolution as a distributed naming system
+- content services
+- file transfer
+
+Those are future layers, not part of the current wire protocol.
+
+## Practical summary
+
+The protocol stack today is:
+
+1. libp2p transport and encrypted host
+2. DHT discovery on `fgov-network`
+3. direct peer connections via multiaddrs
+4. `/fgov` name exchange over a stream
+5. terminal or GUI presentation of the resulting peer map
+
+## Next pages
+
+- [Services](/services/) - how the runtime pieces fit together
+- [How to Use](/how-to-use/) - start the current binaries correctly
+- [Deployment](/deployment/) - run this beyond local testing

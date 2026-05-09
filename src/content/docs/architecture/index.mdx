@@ -1,0 +1,89 @@
+---
+title: Architecture & Design
+description: How the codebase is organized and how the node runtime actually works.
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+P2PNetwork is not a multi-hop privacy network yet. The current implementation is a smaller, real system: libp2p hosts, a Kademlia DHT, a bootstrap node, a peer node, and a GUI built on top of the same node package.
+
+## The code shape
+
+The Go module is `fgov/network`.
+
+The important packages are:
+
+- `Network/cmd/bootstrap` - interactive bootstrap entrypoint
+- `Network/cmd/peer` - interactive peer entrypoint
+- `Network/cmd/gui` - desktop UI entrypoint
+- `Network/pkg/node` - shared node logic, discovery, connection, and name sync
+
+## Runtime layers
+
+<CardGrid>
+  <Card title="Transport">
+    libp2p creates a host on `/ip4/0.0.0.0/tcp/<port>` and handles encrypted transport and peer connections.
+  </Card>
+  <Card title="Discovery">
+    The node uses a Kademlia DHT and routing discovery to find peers advertising on `fgov-network`.
+  </Card>
+  <Card title="Peer registry">
+    Connected and discovered peers are tracked in maps so the CLI and GUI can render them.
+  </Card>
+  <Card title="Name sync">
+    Connected peers exchange display names over a `/fgov` stream with JSON payloads.
+  </Card>
+  <Card title="Interfaces">
+    The CLI prints status to the terminal; the GUI presents the same data in a Fyne window.
+  </Card>
+</CardGrid>
+
+## What happens when a node starts
+
+1. A libp2p host is created.
+2. Optional bootstrap peers are parsed from `bs-nodes` or from the bootstrap list passed to `NewNode`.
+3. The DHT is started in server mode.
+4. The DHT bootstraps.
+5. Any configured bootstrap peers are connected.
+6. The node prints its peer ID and full multiaddrs.
+7. A connection handler records peers and starts name synchronization.
+8. Discovery loops begin and keep searching for peers.
+
+## Peer records
+
+The shared `Node` type stores two peer collections:
+
+- `Peers` - currently connected peers
+- `DiscoveredPeers` - peers found by discovery, whether connected or not
+
+Each record stores:
+
+- a display name
+- a `peer.AddrInfo`
+
+This is what powers the `peers` and `discovered` commands and the GUI peer list.
+
+## Current limits
+
+The current code does **not** implement:
+
+- onion routing
+- multi-hop paths
+- a `.fgov` name registry
+- file transfer
+- messaging payloads
+
+Those ideas exist in the planning notes, but the shipped code is currently focused on direct peer discovery and naming.
+
+## Design goals
+
+- Keep the runtime small and understandable
+- Make peer discovery work before adding higher-level services
+- Reuse the same node package from CLI and GUI entrypoints
+- Keep the bootstrap process simple enough to run by hand
+
+## Next steps
+
+- [Getting Started](/getting-started/) - build and run the current code
+- [How to Use](/how-to-use/) - exact runtime commands and flow
+- [Services](/services/) - bootstrap, discovery, and name sync details

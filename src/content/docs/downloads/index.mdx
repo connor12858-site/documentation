@@ -1,13 +1,25 @@
 ---
 title: Downloads
-description: Live release information and build instructions for P2PNetwork.
+description: Release artifacts and the current build commands for the repository.
 ---
 
 import GitHubLivePanel from '../../../components/GitHubLivePanel.astro';
 
-Use this page to track the latest release and fetch binaries when assets are published.
+## Release artifacts
 
-## Latest Release
+The repository currently ships Windows binaries in `Releases/`:
+
+| File | Purpose |
+|------|---------|
+| `bootstrap-v1.0.exe` | Bootstrap node |
+| `peer-node-v1.0.exe` | Peer CLI |
+| `bootstrap-v1.1.exe` | Updated bootstrap node |
+| `peer-v1.1.exe` | Updated peer CLI |
+| `gui-v1.1.exe` | Fyne desktop client |
+
+These are the files to mirror or package when you want to distribute the current builds.
+
+## Live release panel
 
 <GitHubLivePanel
   owner="connor12858-site"
@@ -18,19 +30,51 @@ Use this page to track the latest release and fetch binaries when assets are pub
   showMilestones={false}
 />
 
-## Build From Source
+## Build from source
+
+From `Network/`:
 
 ```bash
-git clone https://github.com/connor12858-site/P2PNetwork.git
-cd P2PNetwork/GoP2P
-go build ./cmd/relay
-go build ./cmd/user
+go build -o bootstrap ./cmd/bootstrap
+go build -o peer ./cmd/peer
+go build -o gui ./cmd/gui
 ```
 
-This generates local relay and user binaries using your current Go toolchain.
+The repository also has a `Makefile`:
 
-## Release Publishing Notes
+```bash
+make bootstrap
+make peer
+```
 
-- Publish tagged releases in GitHub to populate this page automatically.
-- Attach platform-specific binaries to release assets when available.
-- Keep release notes focused on network behavior and compatibility changes.
+And a Windows build script:
+
+```powershell
+powershell -File build.ps1 -OutDir ./bin -v 1.1
+```
+
+That script builds every package in `cmd/` and names the output `name-version.exe`. The GUI build uses the Windows GUI subsystem flag.
+
+## What to expect from each binary
+
+- `bootstrap` asks for a name, prints multiaddrs, and writes `bs-nodes`
+- `peer` reads `bs-nodes`, joins the network, and runs discovery
+- `gui` opens a desktop window and wraps the same shared node package
+
+## When to use source builds
+
+Build from source when you want to:
+
+- change the node package
+- test the current branch instead of a published release
+- produce your own platform-specific binaries
+
+## Notes on platforms
+
+The current published artifacts are Windows executables. If you need macOS or Linux builds, compile them locally from `Network/` with your target Go toolchain and build tags.
+
+## Next pages
+
+- [Release Notes](/release-notes/) - current release inventory
+- [How to Use](/how-to-use/) - build and run instructions
+- [Deployment](/deployment/) - running binaries outside local testing

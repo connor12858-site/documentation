@@ -1,0 +1,70 @@
+---
+title: FAQ
+description: Short answers to the questions the current codebase raises most often.
+---
+
+## What is this project now?
+
+It is a Go/libp2p network with three entrypoints: a bootstrap node, a peer node, and a GUI. The current focus is direct peer discovery, connection management, and peer name syncing.
+
+## Is multi-hop routing implemented?
+
+No. That idea exists in the planning notes, but the code in the repository does not implement it yet.
+
+## What are the current binaries?
+
+The repo currently ships these Windows executables in `Releases/`:
+
+- `bootstrap-v1.0.exe`
+- `peer-node-v1.0.exe`
+- `bootstrap-v1.1.exe`
+- `peer-v1.1.exe`
+- `gui-v1.1.exe`
+
+## What is `bs-nodes`?
+
+It is a text file written by the bootstrap process. The peer CLI reads it at startup and uses the address inside to join the network.
+
+## What does the peer CLI actually do?
+
+It reads `bs-nodes`, prompts for a name, connects to the bootstrap peer, advertises on `fgov-network`, and keeps discovering other peers.
+
+## Can I disconnect from a peer in the CLI?
+
+The node package has a `Disconnect` method, but the current peer terminal does not expose a `disconnect` command.
+
+## What is `/fgov`?
+
+It is the stream protocol used by connected peers to exchange display names as JSON.
+
+## What does the GUI do?
+
+The GUI is a Fyne window titled `FGov P2P Network`. It wraps the same shared node package, shows the running state, and lists connected peers.
+
+## Can I run peers on one machine?
+
+Yes. The peer node uses port `0`, so libp2p picks an available port automatically.
+
+## Can I deploy this on another machine?
+
+Yes, as long as the bootstrap node is reachable and the `bs-nodes` file or bootstrap multiaddr is available to the peer.
+
+## Is this a blockchain or crypto project?
+
+No. It is a networking project.
+
+## Does it already do messaging or file transfer?
+
+No. Those are not in the current codebase.
+
+## What should I read first?
+
+Start with [Getting Started](/getting-started/) and then read [How to Use](/how-to-use/).
+
+## Where should bugs go?
+
+Use the GitHub issues tracker for normal bugs and report security problems privately.
+
+## What is the safest summary of the project?
+
+It is a practical peer-to-peer network scaffold, not a privacy network or messaging platform yet.
